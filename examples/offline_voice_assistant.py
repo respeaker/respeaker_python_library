@@ -1,16 +1,31 @@
+"""
+ ReSpeaker Python Library
+ Copyright (c) 2016 Seeed Technology Limited.
 
-import os
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+"""
+
 import time
 from threading import Thread, Event
+
+import pyaudio
+
 from respeaker import Microphone
 from respeaker import Player
-import pyaudio
-import sys
-
-
 
 mic = None
 quit_event = Event()
+
 
 def main():
     global mic, quit_event
@@ -28,8 +43,8 @@ def main():
                 if command.find('play music') > 0:
                     pass
 
-
     mic.close()
+
 
 if __name__ == '__main__':
     thread = Thread(target=main)
@@ -44,4 +59,3 @@ if __name__ == '__main__':
             break
 
     thread.join()
-
