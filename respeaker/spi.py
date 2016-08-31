@@ -22,7 +22,7 @@ if platform.machine() == 'mips':
     import time
 
 
-    class SPI():
+    class SPI:
         def __init__(self, sck=15, mosi=17, miso=16, cs=14):
             self.sck = mraa.Gpio(sck)
             self.mosi = mraa.Gpio(mosi)
@@ -88,12 +88,18 @@ if platform.machine() == 'mips':
 
             self.cs.write(1)
             return response
+
+        def close(self):
+            pass
 else:
     class SPI:
         def __init__(self):
             pass
 
         def write(self, data):
+            pass
+
+        def close(self):
             pass
 
 if __name__ == '__main__':
