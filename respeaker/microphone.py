@@ -36,7 +36,7 @@ IDLE_CHECK_CHUNKS = [2, 48]  # switch to idle state if 64 chunks contains less t
 
 
 class Microphone:
-    def __init__(self, pyaudio_instance, vad_level=3):
+    def __init__(self, pyaudio_instance, vad_level=3, use_pocketsphinx=False):
         self.pyaudio_instance = pyaudio_instance
         self.stream = self.pyaudio_instance.open(format=pyaudio.paInt16,
                                                  channels=1,
@@ -51,8 +51,10 @@ class Microphone:
         self.lock = Lock()
         self.listening = False
         self.vad = webrtcvad.Vad(vad_level)
-        self.decoder = None
         self.decoder_restart = False
+        self.decoder = None
+        if use_pocketsphinx:
+            self.decoder = self.get_decoder()
 
         self.recording = False
 
@@ -71,7 +73,7 @@ class Microphone:
         self.recording_countdown = None
 
     @staticmethod
-    def _get_decoder():
+    def create_decoder():
         from pocketsphinx.pocketsphinx import Decoder
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -87,13 +89,15 @@ class Microphone:
 
     def get_decoder(self):
         if not self.decoder:
-            self.decoder = self._get_decoder()
+            self.decoder = self.create_decoder()
+            self.decoder.start_utt()
+            self.decoder_restart = False
 
         return self.decoder
 
     def detect(self, max_phrase_ms=0, max_wait_ms=0, keyword=None):
         if not self.decoder:
-            self.decoder = self._get_decoder()
+            self.decoder = self.create_decoder()
             self.decoder.start_utt()
             self.decoder_restart = False
 
