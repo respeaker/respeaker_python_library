@@ -1,4 +1,4 @@
-from hid import INTERFACE, usb_backend
+from usb_hid import INTERFACE, usb_backend
 from spi import SPI
 
 CRC8_TABLE = (
@@ -66,8 +66,11 @@ class PixelRing:
         else:
             self.write(0, [1, b, g, r])
 
-    def listen(self, direction):
-        self.write(0, [2, 0, direction & 0xFF, (direction >> 8) & 0xFF])
+    def listen(self, direction=None):
+        if direction is None:
+            self.write(0, [7, 0, 0, 0])
+        else:
+            self.write(0, [2, 0, direction & 0xFF, (direction >> 8) & 0xFF])
 
     def wait(self):
         self.write(0, [3, 0, 0, 0])

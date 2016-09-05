@@ -102,7 +102,7 @@ class PyWinUSB(Interface):
         for _ in range(64 - len(data)):
             data.append(0)
         #logging.debug("send: %s", data)
-        self.report.send([0] + data)
+        self.report.send(bytearray([0]) + data)
         return
 
 

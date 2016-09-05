@@ -25,6 +25,7 @@ except:
         logging.error("cython-hidapi is required on a Mac OS X Machine")
     isAvailable = False
 else:
+    print('hello')
     isAvailable = True
 
 class HidApiUSB(Interface):

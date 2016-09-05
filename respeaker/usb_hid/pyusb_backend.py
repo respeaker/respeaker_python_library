@@ -62,7 +62,6 @@ class PyUSB(Interface):
                 # Timeouts appear to corrupt data occasionally.  Because of this the
                 # timeout is set to infinite.
                 self.rcv_data.append(self.ep_in.read(self.ep_in.wMaxPacketSize, -1))
-                print self.rcv_data
 
     @staticmethod
     def getAllConnectedInterface():
