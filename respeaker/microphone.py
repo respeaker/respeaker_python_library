@@ -111,7 +111,7 @@ class Microphone:
 
         return ''
 
-    def detect(self, keyword, stop_stream=True):
+    def wakeup(self, keyword, stop_stream=True):
         if not self.decoder:
             self.decoder = self.create_decoder()
             self.decoder.start_utt()
@@ -153,7 +153,7 @@ class Microphone:
 
         return result
 
-    def listen(self, timeout=4, max_phrase=9):
+    def listen(self, timeout=3, max_phrase=9):
         if not self.listening:
             self.queue.queue.clear()
             self.flag_ring_buffer = bytearray(RING_SIZE)
