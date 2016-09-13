@@ -1,57 +1,76 @@
-import ctypes
-import struct
+"""
+ ReSpeaker Python Library
+ Copyright (c) 2016 Seeed Technology Limited.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+"""
+
 import array
 import math
+from fft import FFT
 
 
 class SpectrumAnalyzer:
-    def __init__(self, n):
-        self.n = 1 << math.frexp(n)[1]
-        self.real_input = array.array('f', [0.0] * n)
-        self.complex_output = array.array('f', [0.0] * (n * 2))
-        self.amplitude = array.array('f', [0.0] * n)
-        self.phase = array.array('f', [0.0] * n)
+    def __init__(self, size, sample_rate=16000, band_number=12, window=[50, 8000]):
+        self.size = 1 << math.frexp(size - 1)[1]
+        self.sample_rate = float(sample_rate)
+        self.resolution = self.sample_rate / self.size  # (sample_rate/2) / (band/2)
 
-        self.fftw3f = ctypes.CDLL('libfftw3f.so')
+        self.set_band(band_number, window)
 
-        # fftw_plan fftw_plan_dft_r2c_1d(int n, double *in, fftw_complex *out, unsigned flags);
-        self.fftwf_plan_dft_r2c_1d = self.fftw3f.fftwf_plan_dft_r2c_1d
-        self.fftwf_plan_dft_r2c_1d.argtypes = (ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint)
-        self.fftwf_plan_dft_r2c_1d.restype = ctypes.c_void_p
+        self.fft = FFT(self.size)
 
-        # void fftwf_execute(const fftwf_plan plan)
-        self.fftwf_execute = self.fftw3f.fftwf_execute
-        self.fftwf_execute.argtypes = (ctypes.c_void_p,)
-        self.fftwf_execute.restype = None
+    def set_band(self, n, window=[50, 8000]):
+        self.band = n
+        self.breakpoints = [0] * (n + 1)
+        self.frequencies = [0.0] * (n + 1)
+        self.strength = [0.0] * n
 
-        input_ptr, _ = self.real_input.buffer_info()
-        output_ptr, _ = self.complex_output.buffer_info()
-        self.fftwf_plan = self.fftwf_plan_dft_r2c_1d(n, input_ptr, output_ptr, 1)
+        delta = math.pow(float(window[1]) / window[0], 1.0 / n)
+        for i in range(n + 1):
+            self.frequencies[i] = math.pow(delta, i) * window[0]
 
-    def analyze(self, audio_string):
-        # int16_array = struct.unpack('<%dh' % (len(audio_string)/2), audio_string)  # string to 16 bit signed integer
-        int16_array = array.array('h')
-        int16_array.fromstring(audio_string)
-        for index, int16 in enumerate(int16_array):
-            self.real_input[index] = float(int16)
+        breakpoint = 0
+        for i in range(1, self.size / 2):
+            if self.resolution * i >= self.frequencies[breakpoint]:
+                self.breakpoints[breakpoint] = i
+                breakpoint += 1
+                if breakpoint > n:
+                    break
 
-        print self.real_input
-        self.fftwf_execute(self.fftwf_plan)
-        print self.complex_output
+        self.breakpoints[n] = self.size / 2 + 1
+        self.band_size = [self.breakpoints[i + 1] - self.breakpoints[i] for i in range(n)]
+        # print self.frequencies
+        # print self.breakpoints
 
-        for i in range(self.n / 2):
-            self.amplitude[i] = math.hypot(self.complex_output[2*i], self.complex_output[2*i + 1])
-            self.phase[i] = math.atan2(self.complex_output[2*i] + 1, self.complex_output[2*i])
+    def analyze(self, data):
+        amplitude = self.fft.dft(data)
+        for i in range(self.band):
+            self.strength[i] = sum(amplitude[self.breakpoints[i]:self.breakpoints[i + 1]])  # / self.band_size[i]
 
-        return self.amplitude, self.phase
+        return self.strength
 
 
 if __name__ == '__main__':
-    N = 4
-    analyzer = SpectrumAnalyzer(N)
+    N = 2048
+    rate = 16000
 
-    audio = array.array('h', [1] * N)
-    audio[0] = 0
-    audio[2] = 2
-    audio[3] = 3
-    analyzer.analyze(audio.tostring())
+    data = array.array('h', [0] * N)
+    w = 2 * math.pi * 50 / rate
+    for t in range(N):
+        data[t] = int(100 * math.sin(w * t))
+
+    analyzer = SpectrumAnalyzer(N, rate)
+    strength = analyzer.analyze(data.tostring())
+    print [int(f) for f in analyzer.frequencies]
+    print [int(s) for s in strength]
