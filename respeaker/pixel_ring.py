@@ -53,9 +53,10 @@ class PixelRing:
     @staticmethod
     def get_hid():
         interface = INTERFACE[usb_backend]
-        boards = interface.getAllConnectedInterface()
-        if boards:
-            return boards[0]
+        if interface.isAvailable:
+            boards = interface.getAllConnectedInterface()
+            if boards:
+                return boards[0]
 
     def off(self):
         self.set_color(rgb=0)
