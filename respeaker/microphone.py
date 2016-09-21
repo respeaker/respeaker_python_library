@@ -36,18 +36,23 @@ IDLE_CHECK_CHUNKS = [2, 48]  # switch to idle state if 64 chunks contains less t
 RING_SIZE = 64
 RING_MASK = 63
 
+current_file_dir = os.path.dirname(os.path.realpath(__file__))
+pocketsphinx_data = os.getenv('POCKETSPHINX_DATA', os.path.join(current_file_dir, 'pocketsphinx-data'))
+
 
 class Microphone:
     def __init__(self, pyaudio_instance, vad_level=3, use_pocketsphinx=True):
         self.pyaudio_instance = pyaudio_instance
-        self.stream = self.pyaudio_instance.open(format=pyaudio.paInt16,
-                                                 channels=1,
-                                                 rate=SAMPLE_RATE,
-                                                 input=True,
-                                                 start=False,
-                                                 input_device_index=1,
-                                                 frames_per_buffer=BUFFER_FRAMES,
-                                                 stream_callback=self._callback)
+        self.stream = self.pyaudio_instance.open(
+            format=pyaudio.paInt16,
+            channels=1,
+            rate=SAMPLE_RATE,
+            input=True,
+            start=False,
+            input_device_index=1,
+            frames_per_buffer=BUFFER_FRAMES,
+            stream_callback=self._callback
+        )
 
         self.queue = Queue.Queue()
         self.vad = webrtcvad.Vad(vad_level)
@@ -73,11 +78,10 @@ class Microphone:
     def create_decoder():
         from pocketsphinx.pocketsphinx import Decoder
 
-        script_dir = os.path.dirname(os.path.realpath(__file__))
         config = Decoder.default_config()
-        config.set_string('-hmm', os.path.join(script_dir, 'pocketsphinx-data/hmm'))
-        config.set_string('-dict', os.path.join(script_dir, 'pocketsphinx-data/en.dic'))
-        config.set_string('-kws', os.path.join(script_dir, 'pocketsphinx-data/keywords.txt'))
+        config.set_string('-hmm', os.path.join(pocketsphinx_data, 'hmm'))
+        config.set_string('-dict', os.path.join(pocketsphinx_data, 'dictionary.txt'))
+        config.set_string('-kws', os.path.join(pocketsphinx_data, 'keywords.txt'))
         # config.set_int('-samprate', SAMPLE_RATE) # uncomment if rate is not 16000. use config.set_float() on ubuntu
         config.set_int('-nfft', 2048)
         config.set_string('-logfn', os.devnull)
