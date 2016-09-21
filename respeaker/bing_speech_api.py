@@ -11,7 +11,8 @@ import io
 from monotonic import monotonic
 from urllib import urlencode
 from urllib2 import Request, urlopen, URLError, HTTPError
-
+import requests
+import types
 
 class RequestError(Exception):
     pass
@@ -86,10 +87,19 @@ class BingSpeechAPI:
 
             self.expire_time = start_time + expiry_seconds
 
+    def get_chunk_generator(self, audio):
+        yield self.get_wav_header()
+        for a in audio:
+            yield a
+
     def recognize(self, audio_data, language="en-US", show_all=False):
         self.auth()
-        wav_data = self.to_wav(audio_data)
-        url = "https://speech.platform.bing.com/recognize/query?{0}".format(urlencode({
+        if isinstance(audio_data, types.GeneratorType):
+            data = self.get_chunk_generator(audio_data)
+        else:
+            data = self.to_wav(audio_data)
+
+        params = {
             "version": "3.0",
             "requestid": uuid.uuid4(),
             "appID": "D4D52672-91D7-4C74-8AD8-42B1D98141A5",
@@ -99,24 +109,39 @@ class BingSpeechAPI:
             "scenarios": "ulm",
             "instanceid": uuid.uuid4(),
             "result.profanitymarkup": "0",
-        }))
-        request = Request(url, data=wav_data, headers={
-            "Authorization": "Bearer {0}".format(self.access_token),
-            "Content-Type": "audio/wav; samplerate=16000; sourcerate={0}; trustsourcerate=true".format(16000),
-        })
-        try:
-            response = urlopen(request)
-        except HTTPError as e:
-            raise RequestError("recognition request failed: {0}".format(
-                getattr(e, "reason", "status {0}".format(e.code))))  # use getattr to be compatible with Python 2.6
-        except URLError as e:
-            raise RequestError("recognition connection failed: {0}".format(e.reason))
-        response_text = response.read().decode("utf-8")
-        result = json.loads(response_text)
+        }
 
-        # return results
-        if show_all: return result
-        if "header" not in result or "lexical" not in result["header"]: raise UnknownValueError()
+        headers = {
+            "Authorization": "Bearer {0}".format(self.access_token),
+            "Content-Type": "audio/wav; samplerate=16000; sourcerate=16000; trustsourcerate=true",
+        }
+
+        if False:
+            url = "https://speech.platform.bing.com/recognize/query?{0}".format(urlencode(params))
+            request = Request(url, headers=headers, data=data)
+            try:
+                response = urlopen(request)
+            except HTTPError as e:
+                raise RequestError("recognition request failed: {0}".format(
+                    getattr(e, "reason", "status {0}".format(e.code))))  # use getattr to be compatible with Python 2.6
+            except URLError as e:
+                raise RequestError("recognition connection failed: {0}".format(e.reason))
+
+            response_text = response.read().decode("utf-8")
+            result = json.loads(response_text)
+        else:
+            url = "https://speech.platform.bing.com/recognize/query"
+            response = requests.post(url, params=params, headers=headers, data=data)
+
+            if response.status_code != 200:
+                raise RequestError("recognition connection failed")
+
+            result = response.json()
+
+        if show_all:
+            return result
+        if "header" not in result or "lexical" not in result["header"]:
+            raise UnknownValueError()
         return result["header"]["lexical"]
 
     def synthesize(self, text, language="en-US", gender="Female"):
@@ -139,24 +164,30 @@ class BingSpeechAPI:
                 <voice xml:lang='%s' xml:gender='%s' name='%s'>%s</voice>\
                 </speak>" % (language, gender, service_name, text)
 
-        headers = {"Content-type": "application/ssml+xml",
-                   "X-Microsoft-OutputFormat": "raw-16khz-16bit-mono-pcm",
-                   "Authorization": "Bearer " + self.access_token,
-                   "X-Search-AppId": "07D3234E49CE426DAA29772419F436CA",
-                   "X-Search-ClientID": str(uuid.uuid1()).replace('-', ''),
-                   "User-Agent": "TTSForPython"}
+        headers = {
+            "Content-type": "application/ssml+xml",
+            "X-Microsoft-OutputFormat": "raw-16khz-16bit-mono-pcm",
+            "Authorization": "Bearer " + self.access_token,
+            "X-Search-AppId": "07D3234E49CE426DAA29772419F436CA",
+            "X-Search-ClientID": str(uuid.uuid1()).replace('-', ''),
+            "User-Agent": "TTSForPython"
+        }
 
         url = "https://speech.platform.bing.com/synthesize"
-        request = Request(url, data=body, headers=headers)
-        try:
-            response = urlopen(request)
-        except HTTPError as e:
-            raise RequestError("tts request failed: {0}".format(
-                getattr(e, "reason", "status {0}".format(e.code))))  # use getattr to be compatible with Python 2.6
-        except URLError as e:
-            raise RequestError("tts connection failed: {0}".format(e.reason))
+        if False:
+            request = Request(url, data=body, headers=headers)
+            try:
+                response = urlopen(request)
+            except HTTPError as e:
+                raise RequestError("tts request failed: {0}".format(
+                    getattr(e, "reason", "status {0}".format(e.code))))  # use getattr to be compatible with Python 2.6
+            except URLError as e:
+                raise RequestError("tts connection failed: {0}".format(e.reason))
 
-        data = response.read()
+            data = response.read()
+        else:
+            r = requests.post(url, headers=headers, data=body)
+            data = r.content
 
         return data
 
@@ -174,6 +205,21 @@ class BingSpeechAPI:
             finally:  # make sure resources are cleaned up
                 wav_writer.close()
         return wav_data
+
+    @staticmethod
+    def get_wav_header():
+        # generate the WAV header
+        with io.BytesIO() as f:
+            w = wave.open(f, "wb")
+            try:
+                w.setframerate(16000)
+                w.setsampwidth(2)
+                w.setnchannels(1)
+                w.writeframes('')
+                header = f.getvalue()
+            finally:
+                w.close()
+        return header
 
 
 if __name__ == '__main__':
