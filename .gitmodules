@@ -1,0 +1,3 @@
+[submodule "respeaker/pocketsphinx-data"]
+	path = respeaker/pocketsphinx-data
+	url = https://github.com/respeaker/pocketsphinx-data.git
