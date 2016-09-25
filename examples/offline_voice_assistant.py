@@ -18,47 +18,20 @@
 import time
 from threading import Thread, Event
 
-import pyaudio
-
-try:
-    from respeaker import *
-except ImportError:
-    import fix_import
-    from respeaker import *
-
-
-mic = None
+import fix_import
+from respeaker import Microphone
 
 
 def task(quit_event):
-    global mic
-
-    pixels = PixelRing()
-    pixels.set_color(rgb=0x400000)
-
-    pa = pyaudio.PyAudio()
-    mic = Microphone(pa)
-
-    pixels.set_color(rgb=0x004000)
-    time.sleep(2)
-    pixels.off()
+    mic = Microphone(quit_event=quit_event)
 
     while not quit_event.is_set():
-        if mic.wakeup(keyword='alexa'):
+        if mic.wakeup('respeaker'):
             print('Wake up')
-            pixels.listen()
-
             data = mic.listen()
             text = mic.recognize(data)
-
-            pixels.wait()
-            if text.find('play music') >= 0:
-                print('Play music')
-
-        pixels.off()
-
-    pixels.off()
-    mic.close()
+            if text:
+                print('Recognized %s' % text)
 
 
 def main():
@@ -69,13 +42,10 @@ def main():
         try:
             time.sleep(1)
         except KeyboardInterrupt:
-            print('\nquit')
+            print('Quit')
             quit_event.set()
-            mic.quit()
             break
-
     thread.join()
-
 
 if __name__ == '__main__':
     main()
