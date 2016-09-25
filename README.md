@@ -13,27 +13,20 @@ It uses [PocketSphinx](https://github.com/cmusphinx/pocketsphinx) for keyword sp
 import time
 from threading import Thread, Event
 
-import pyaudio
-from respeaker import Microphone, Player
-
-
-mic = None
+import fix_import
+from respeaker import Microphone
 
 
 def task(quit_event):
-    global mic
+    mic = Microphone(quit_event=quit_event)
 
-    pa = pyaudio.PyAudio()
-    mic = Microphone(pa)
     while not quit_event.is_set():
-        if mic.wakeup(keyword='alexa'):
+        if mic.wakeup('respeaker'):
             print('Wake up')
             data = mic.listen()
             text = mic.recognize(data)
-            if text.find('play music') >= 0:
-                print('Play music')
-
-    mic.close()
+            if text:
+                print('Recognized %s' % text)
 
 
 def main():
@@ -44,13 +37,10 @@ def main():
         try:
             time.sleep(1)
         except KeyboardInterrupt:
-            print('\nquit')
+            print('Quit')
             quit_event.set()
-            mic.quit()
             break
-
     thread.join()
-
 
 if __name__ == '__main__':
     main()
