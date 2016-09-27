@@ -72,6 +72,17 @@ class Microphone:
         self.ring.set_color(rgb=0x400000)
     
         self.pyaudio_instance = pyaudio_instance if pyaudio_instance else pyaudio.PyAudio()
+
+        self.device_index = 0
+        for i in range(self.pyaudio_instance.get_device_count()):
+                dev = self.pyaudio_instance.get_device_info_by_index(i)
+                name = dev['name'].encode('utf-8')
+                # print(i, name, dev['maxInputChannels'], dev['maxOutputChannels'])
+                if name.lower().find('respeaker') >= 0 and dev['maxInputChannels'] > 0:
+                    print('Use {}'.format(name))
+                    self.device_index = i
+                    break
+
         self.stream = self.pyaudio_instance.open(
             input=True,
             start=False,
@@ -80,7 +91,7 @@ class Microphone:
             rate=self.sample_rate,
             frames_per_buffer=2048,
             stream_callback=self._callback,
-            # input_device_index=1,
+            input_device_index=self.device_index,
         )
 
         self.quit_event = quit_event if quit_event else Event()
