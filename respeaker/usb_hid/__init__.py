@@ -54,3 +54,17 @@ if not usb_backend:
     else:
         raise Exception("No USB backend found")
 
+
+devices = None
+if INTERFACE[usb_backend].isAvailable:
+    devices = INTERFACE[usb_backend].getAllConnectedInterface()
+
+
+def get(index=0):
+    global devices
+
+    if not devices:
+        if INTERFACE[usb_backend].isAvailable:
+            devices = INTERFACE[usb_backend].getAllConnectedInterface()
+    if devices and len(devices) > index:
+        return devices[index]
