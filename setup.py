@@ -24,7 +24,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.3.0',
+    version='0.4.0',
 
     description='To build voice enabled objects with ReSpeaker',
 
@@ -71,7 +71,7 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_data={
-        # 'respeaker': ['pocketsphinx-data/en.dic', 'pocketsphinx-data/keywords.txt', 'pocketsphinx-data/hmm/*'],
+        'respeaker': ['pocketsphinx-data/dictionary.txt', 'pocketsphinx-data/keywords.txt', 'pocketsphinx-data/hmm/*'],
     },
 
     # To provide executable scripts, use entry points in preference to the
