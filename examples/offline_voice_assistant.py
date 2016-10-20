@@ -15,6 +15,7 @@
  limitations under the License.
 """
 
+import logging
 import time
 from threading import Thread, Event
 
@@ -35,6 +36,8 @@ def task(quit_event):
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
+
     quit_event = Event()
     thread = Thread(target=task, args=(quit_event,))
     thread.start()
