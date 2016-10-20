@@ -93,7 +93,7 @@ if platform.machine() == 'mips':
             self.phase = mode & 1
             self.sck.write(self.polarity)
 
-        def write_byte(self, data):
+        def _exchange(self, data):
             read = 0
             for bit in range(self.bits - 1, -1, -1):
                 self.mosi.write((data >> bit) & 0x01)
@@ -116,13 +116,13 @@ if platform.machine() == 'mips':
             response = bytearray()
             self.cs.write(0)
             if type(data) is int:
-                response.append(self.write_byte(data))
+                response.append(self._exchange(data))
             elif type(data) is bytearray:
                 for b in data:
-                    response.append(self.write_byte(b))
+                    response.append(self._exchange(b))
             elif type(data) is str:
                 for b in bytearray(data):
-                    response.append(self.write_byte(b))
+                    response.append(self._exchange(b))
             elif type(data) is list:
                 for item in data:
                     self.write(item)
@@ -134,12 +134,9 @@ if platform.machine() == 'mips':
             return response
 
         def write(self, data=None, address=None):
-            if address:
-                self.write_byte(0xA5)           # prefix
-                self.write_byte(address)        # address
-                self.write_byte(len(data))      # length
-                response = self._write(data)    # data
-                self.write_byte(crc8(data))     # crc8
+            if address is not None:
+                data = bytearray([0xA5, address & 0xFF, len(data) & 0xFF]) + data + bytearray([crc8(data)])
+                response = self._write(data)[3:-1]
             else:
                 response = self._write(data)
 
