@@ -6,10 +6,15 @@ ReSpeaker python library is an open source python library to provide basic funct
 
 It uses [PocketSphinx](https://github.com/cmusphinx/pocketsphinx) for keyword spotting and uses [webrtcvad](https://github.com/wiseman/py-webrtcvad) for voice activity detecting.
 
+### Install
+```
+pip install respeaker --upgrade
+```
 
 ### Getting started
 
 ```
+import logging
 import time
 from threading import Thread, Event
 
@@ -30,6 +35,8 @@ def task(quit_event):
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
+
     quit_event = Event()
     thread = Thread(target=task, args=(quit_event,))
     thread.start()
