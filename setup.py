@@ -24,7 +24,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.4.1',
+    version='0.4.2',
 
     description='To build voice enabled objects with ReSpeaker',
 
@@ -37,6 +37,8 @@ setup(
 
     # Choose your license
     license='Apache 2.0',
+
+    zip_safe=False,
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
