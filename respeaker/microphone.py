@@ -33,6 +33,7 @@ from vad import vad
 
 
 logger = logger = logging.getLogger('mic')
+collecting_audio = os.getenv('COLLECTING_AUDIO', 'no')
 
 
 def random_string(length):
@@ -173,7 +174,9 @@ class Microphone:
             hypothesis = self.decoder.hyp()
             if hypothesis:
                 logger.info('Detected {}'.format(hypothesis.hypstr))
-                save_as_wav(b''.join(self.detect_history), hypothesis.hypstr)
+                if collecting_audio != 'no':
+                    logger.debug(collecting_audio)
+                    save_as_wav(b''.join(self.detect_history), hypothesis.hypstr)
                 self.detect_history.clear()
                 if keyword:
                     if hypothesis.hypstr.find(keyword) >= 0:
@@ -263,6 +266,8 @@ class Microphone:
                     for d in self.listen_history:
                         self.listen_queue.put(d)
                         self.listen_countdown[0] -= 1
+
+                    self.listen_history.clear()
 
                 self.listen_queue.put(in_data)
                 self.listen_countdown[0] -= 1
