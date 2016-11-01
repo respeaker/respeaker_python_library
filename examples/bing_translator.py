@@ -20,18 +20,27 @@ import time
 from threading import Thread, Event
 
 from respeaker import Microphone
+from respeaker.bing_speech_api import BingSpeechAPI
+
+
+# get a key from https://www.microsoft.com/cognitive-services/en-us/speech-api
+BING_KEY = ''
 
 
 def task(quit_event):
     mic = Microphone(quit_event=quit_event)
+    bing = BingSpeechAPI(key=BING_KEY)
 
     while not quit_event.is_set():
         if mic.wakeup('respeaker'):
             print('Wake up')
             data = mic.listen()
-            text = mic.recognize(data)
-            if text:
-                print('Recognized %s' % text)
+            try:
+                text = bing.recognize(data)
+                if text:
+                    print('Recognized %s' % text)
+            except Exception as e:
+                print(e.message)
 
 
 def main():
