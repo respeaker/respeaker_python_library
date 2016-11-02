@@ -62,21 +62,16 @@ def crc8(data):
 
 
 if platform.machine() == 'mips':
-    import mraa
+    from gpio import *
     import time
 
 
     class SPI:
         def __init__(self, sck=15, mosi=17, miso=16, cs=14):
-            self.sck = mraa.Gpio(sck)
-            self.mosi = mraa.Gpio(mosi)
-            self.miso = mraa.Gpio(miso)
-            self.cs = mraa.Gpio(cs)
-
-            self.sck.dir(mraa.DIR_OUT)
-            self.mosi.dir(mraa.DIR_OUT)
-            self.miso.dir(mraa.DIR_IN)
-            self.cs.dir(mraa.DIR_OUT)
+            self.sck = Gpio(sck, OUTPUT)
+            self.mosi = Gpio(mosi, OUTPUT)
+            self.miso = Gpio(miso, INPUT)
+            self.cs = Gpio(cs, OUTPUT)
 
             self.cs.write(1)
 
