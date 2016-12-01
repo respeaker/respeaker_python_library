@@ -63,6 +63,7 @@ def crc8(data):
 
 if platform.machine() == 'mips':
     from gpio import *
+    from threading import RLock
     import time
 
 
@@ -77,6 +78,7 @@ if platform.machine() == 'mips':
 
             self.frequency(10000000)
             self.format(8, 0)
+            self.lock = RLock()
 
         def frequency(self, hz=10000000):
             self.freq = hz
@@ -129,13 +131,14 @@ if platform.machine() == 'mips':
             return response
 
         def write(self, data=None, address=None):
-            if address is not None:
-                data = bytearray([0xA5, address & 0xFF, len(data) & 0xFF]) + data + bytearray([crc8(data)])
-                response = self._write(data)[3:-1]
-            else:
-                response = self._write(data)
+            with self.lock:
+                if address is not None:
+                    data = bytearray([0xA5, address & 0xFF, len(data) & 0xFF]) + data + bytearray([crc8(data)])
+                    response = self._write(data)[3:-1]
+                else:
+                    response = self._write(data)
 
-            return response
+                return response
 
         def close(self):
             pass
