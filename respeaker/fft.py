@@ -19,6 +19,7 @@ import array
 import ctypes
 import math
 import os
+import logging
 
 
 class FFT:
@@ -30,24 +31,29 @@ class FFT:
         self.amplitude = array.array('f', [0.0] * (self.size / 2 + 1))
         self.phase = array.array('f', [0.0] * (self.size / 2 + 1))
 
-        if os.name == "nt":
-            self.fftw3f = ctypes.CDLL('libfftw3f-3.dll')
-        else:
-            self.fftw3f = ctypes.CDLL('libfftw3f.so')
+        try:
+            if os.name == "nt":
+                self.fftw3f = ctypes.CDLL('libfftw3f-3.dll')
+            else:
+                self.fftw3f = ctypes.CDLL('libfftw3f.so')
 
-        # fftw_plan fftw_plan_dft_r2c_1d(int band_number, double *in, fftw_complex *out, unsigned flags);
-        self.fftwf_plan_dft_r2c_1d = self.fftw3f.fftwf_plan_dft_r2c_1d
-        self.fftwf_plan_dft_r2c_1d.argtypes = (ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint)
-        self.fftwf_plan_dft_r2c_1d.restype = ctypes.c_void_p
+            # fftw_plan fftw_plan_dft_r2c_1d(int band_number, double *in, fftw_complex *out, unsigned flags);
+            self.fftwf_plan_dft_r2c_1d = self.fftw3f.fftwf_plan_dft_r2c_1d
+            self.fftwf_plan_dft_r2c_1d.argtypes = (ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint)
+            self.fftwf_plan_dft_r2c_1d.restype = ctypes.c_void_p
 
-        # void fftwf_execute(const fftwf_plan plan)
-        self.fftwf_execute = self.fftw3f.fftwf_execute
-        self.fftwf_execute.argtypes = (ctypes.c_void_p,)
-        self.fftwf_execute.restype = None
+            # void fftwf_execute(const fftwf_plan plan)
+            self.fftwf_execute = self.fftw3f.fftwf_execute
+            self.fftwf_execute.argtypes = (ctypes.c_void_p,)
+            self.fftwf_execute.restype = None
 
-        input_ptr, _ = self.real_input.buffer_info()
-        output_ptr, _ = self.complex_output.buffer_info()
-        self.fftwf_plan = self.fftwf_plan_dft_r2c_1d(self.size, input_ptr, output_ptr, 1)
+            input_ptr, _ = self.real_input.buffer_info()
+            output_ptr, _ = self.complex_output.buffer_info()
+            self.fftwf_plan = self.fftwf_plan_dft_r2c_1d(self.size, input_ptr, output_ptr, 1)
+        except Exception as e:
+            logging.warn('Can not find libffw3f dynamic library, return error - {}'.format(e.message))
+            self.fftwf_execute = lambda x: None
+            self.fftwf_plan = None
 
     def dft(self, data, typecode='h'):
         if type(data) is str:
