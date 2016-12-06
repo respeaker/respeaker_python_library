@@ -70,13 +70,13 @@ class Microphone:
 
         self.device_index = 0
         for i in range(self.pyaudio_instance.get_device_count()):
-                dev = self.pyaudio_instance.get_device_info_by_index(i)
-                name = dev['name'].encode('utf-8')
-                # print(i, name, dev['maxInputChannels'], dev['maxOutputChannels'])
-                if name.lower().find('respeaker') >= 0 and dev['maxInputChannels'] > 0:
-                    logger.info('Use {}'.format(name))
-                    self.device_index = i
-                    break
+            dev = self.pyaudio_instance.get_device_info_by_index(i)
+            name = dev['name'].encode('utf-8')
+            # print(i, name, dev['maxInputChannels'], dev['maxOutputChannels'])
+            if name.lower().find('respeaker') >= 0 and dev['maxInputChannels'] > 0:
+                logger.info('Use {}'.format(name))
+                self.device_index = i
+                break
 
         self.stream = self.pyaudio_instance.open(
             input=True,
