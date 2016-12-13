@@ -68,7 +68,7 @@ class Microphone:
     
         self.pyaudio_instance = pyaudio_instance if pyaudio_instance else pyaudio.PyAudio()
 
-        self.device_index = 0
+        self.device_index = None
         for i in range(self.pyaudio_instance.get_device_count()):
             dev = self.pyaudio_instance.get_device_info_by_index(i)
             name = dev['name'].encode('utf-8')
