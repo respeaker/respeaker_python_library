@@ -18,11 +18,15 @@
 import Queue
 import audioop
 import threading
+import platform
+import subprocess
+import tempfile
 import types
 import wave
 
 import pyaudio
 
+from pixel_ring import pixel_ring
 from spectrum_analyzer import SpectrumAnalyzer
 from spi import spi
 
@@ -86,6 +90,17 @@ class Player:
         stream.close()
 
     def play(self, wav=None, data=None, rate=16000, channels=1, width=2, block=True, spectrum=None):
+        """
+        play wav file or raw audio (string or generator)
+        Args:
+            wav: wav file path
+            data: raw audio data, str or iterator
+            rate: sample rate, only for raw audio
+            channels: channel number, only for raw data
+            width: raw audio data width, 16 bit is 2, only for raw data
+            block: if true, block until audio is played.
+            spectrum: if true, use a spectrum analyzer thread to analyze data
+        """
         if wav:
             f = wave.open(wav, 'rb')
             rate = f.getframerate()
@@ -97,7 +112,7 @@ class Player:
                 while d:
                     yield d
                     d = w.readframes(CHUNK_SIZE)
-                d.close()
+                w.close()
 
             data = gen(f)
 
@@ -111,8 +126,50 @@ class Player:
     def play_raw(self, data, rate=16000, channels=1, width=2):
         self.play(data=data, rate=rate, channels=channels, width=width)
 
+    def play_mp3(self, mp3=None, data=None, block=True):
+        """
+        It supports GeneratorType mp3 stream or mp3 data string
+        Args:
+            mp3: mp3 file
+            data: mp3 generator or data
+            block: if true, block until audio is played.
+        """
+        if platform.machine() == 'mips':
+            command = 'madplay -o wave:- - | aplay -M'
+        else:
+            command = 'ffplay -autoexit -nodisp -'
+
+        if mp3:
+            def gen(m):
+                with open(m, 'rb') as f:
+                    d = f.read(1024)
+                    while d:
+                        yield d
+                        d = f.read(1024)
+
+            data = gen(mp3)
+
+        if isinstance(data, types.GeneratorType):
+            p = subprocess.Popen(command, stdin=subprocess.PIPE, shell=True)
+            for d in data:
+                p.stdin.write(d)
+
+            p.stdin.close()
+        else:
+            with tempfile.NamedTemporaryFile(mode='w+b') as f:
+                f.write(data)
+                f.flush()
+                f.seek(0)
+                p = subprocess.Popen(command, stdin=f, shell=True)
+
+        if block:
+            p.wait()
+
     def stop(self):
         self.stop_event.set()
+
+    def close(self):
+        pass
 
 
 def main():
