@@ -18,6 +18,7 @@
 """
 
 import io
+import os
 import types
 import uuid
 import wave
@@ -30,16 +31,8 @@ class RequestError(Exception):
     pass
 
 
-class UnknownValueError(Exception):
-    pass
-
-
-class LocaleError(Exception):
-    pass
-
-
 class BingSpeechAPI:
-    def __init__(self, key):
+    def __init__(self, key=os.getenv('BING_KEY', '')):
         self.key = key
         self.access_token = None
         self.expire_time = None
@@ -91,7 +84,7 @@ class BingSpeechAPI:
             response = self.session.post(credential_url, data=data)
 
             if response.status_code != 200:
-                raise RequestError("recognition connection failed")
+                raise RequestError("http request error with status code {}".format(response.status_code))
 
             credentials = response.json()
 
@@ -132,21 +125,21 @@ class BingSpeechAPI:
         response = self.session.post(url, params=params, headers=headers, data=data)
 
         if response.status_code != 200:
-            raise RequestError("recognition connection failed")
+            raise RequestError("http request error with status code {}".format(response.status_code))
 
         result = response.json()
 
         if show_all:
             return result
         if "header" not in result or "lexical" not in result["header"]:
-            raise UnknownValueError()
+            raise ValueError('Unexpected response: {}'.format(result))
         return result["header"]["lexical"]
 
-    def synthesize(self, text, language="en-US", gender="Female"):
+    def synthesize(self, text, language="en-US", gender="Female", stream=None, chunk_size=4096):
         self.authenticate()
 
         if language not in self.locales.keys():
-            raise LocaleError("language locale not supported.")
+            raise ValueError("language is not supported.")
 
         lang = self.locales.get(language)
 
@@ -172,8 +165,11 @@ class BingSpeechAPI:
         }
 
         url = "https://speech.platform.bing.com/synthesize"
-        response = self.session.post(url, headers=headers, data=body)
-        data = response.content
+        response = self.session.post(url, headers=headers, data=body, stream=stream)
+        if stream:
+            data = response.iter_content(chunk_size=chunk_size)
+        else:
+            data = response.content
 
         return data
 
@@ -209,36 +205,35 @@ class BingSpeechAPI:
 
 
 def main():
-    import sys
+    import timeit
+    import logging
 
-    # get a key from https://www.microsoft.com/cognitive-services/en-us/speech-api
-    BING_KEY = ''
+    logging.basicConfig(level=logging.DEBUG)
 
-    if len(sys.argv) != 2:
-        print('Usage: %s 16k_mono.wav' % sys.argv[0])
-        sys.exit(-1)
+    bing = BingSpeechAPI()
 
-    wf = wave.open(sys.argv[1])
-    if wf.getframerate() != 16000 or wf.getnchannels() != 1 or wf.getsampwidth() != 2:
-        print('only support 16000 sample rate, 1 channel and 2 bytes sample width')
-        sys.exit(-2)
+    def test(text, stream=None):
+        try:
+            print('TTS:{}'.format(text))
+            speech = bing.synthesize(text, stream=stream)
+            text = bing.recognize(speech, language='en-US')
+            print('STT:{}'.format(text.encode('utf-8')))
+            print('Stream mode:{}'.format('yes' if stream else 'no'))
+        except RequestError as e:
+            print("Could not request results from Microsoft Bing Voice Recognition service; {0}".format(e))
 
-    # read less than 10 seconds audio data
-    n = wf.getnframes()
-    if (n / 16000.0) > 10.0:
-        n = 16000 * 10
+    texts = [
+        'Your beliefs become your thoughts',
+        'Your thoughts become your words',
+        'Your words become your actions',
+        'Your actions become your habits',
+        'Your habits become your values',
+        'Your values become your destiny',
+    ]
 
-    frames = wf.readframes(n)
-
-    bing = BingSpeechAPI(BING_KEY)
-
-    # recognize speech using Microsoft Bing Voice Recognition
-    try:
-        text = bing.recognize(frames, language='en-US')
-        print('Bing:' + text.encode('utf-8'))
-    except RequestError as e:
-        print("Could not request results from Microsoft Bing Voice Recognition service; {0}".format(e))
-
+    for n, text in enumerate(texts):
+        print('No.{} try'.format(n))
+        print(timeit.timeit(lambda: test(text, n & 1), number=1))
 
 if __name__ == '__main__':
     main()
