@@ -1,10 +1,19 @@
 language: python
+sudo: false
+env:
+  - ENABLE_LIBSPHINXAD=1
+addons:
+  apt:
+    packages:
+      - swig
+      - libpulse-dev
+      - libfftw3-dev
 python:
-- '2.7'
-- '3.3'
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libfftw3-dev build-essential swig python-dev
+  - '2.7'
+  - '3.2'
+  - '3.3'
+  - '3.4'
+  - '3.5'
 deploy:
   provider: pypi
   user: yihui
