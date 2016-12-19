@@ -4,7 +4,7 @@ python:
 - '3.3'
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y libfftw3-dev portaudio-dev
+  - sudo apt-get install -y libfftw3-dev
 deploy:
   provider: pypi
   user: yihui
