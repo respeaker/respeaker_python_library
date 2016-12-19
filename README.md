@@ -1,6 +1,8 @@
 ReSpeaker Python Library
 ========================
 
+[![Build Status](https://travis-ci.org/respeaker/respeaker_python_library.svg?branch=master)](https://travis-ci.org/respeaker/respeaker_python_library)
+
 [ReSpeaker](http://respeaker.io) is an open project to create voice enabled objects.
 ReSpeaker python library is an open source python library to provide basic functions of voice interaction.
 
