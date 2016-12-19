@@ -1,0 +1,12 @@
+language: python
+python:
+- '2.7'
+- '3.3'
+deploy:
+  provider: pypi
+  user: yihui
+  password:
+    secure: fHMkFRcdRE4uU1cucPUyAMwzaDE9O43WwebaPva50SbSFVQkvXYuiPOZJsj7D33qVmPnDNg5pwjtCDhogkjVLUJt9Ct24ARIaE7g7A3V/d5M66/JCetwdw+RWb3zy6JWSDr2WL66OmOrQxfd1O0bq9eTlZQ1dbDx2NoX/YNAFfWcYwOkh5Q3/SqACMdfWhG+wT4yKnuYx3LM+cicRhGS3cvlr/nBq/YrASUIB61wWDYVxts9rNELXVEj4vob2wasYa9weYOhR65hnUSTbNIg5XiejwgrZMQHvpCAU0vMWHvqcrU54oaX/0lUfTvuBXGKQqCN3Uv6nockczeZVE8Q8EwK6UDE37/5+QjPEkQk3YQdd51SSl2zXAEQlE10MJ9rWfEFXXEcFi+7Iuow4k6fUnDLs4e9oIr01VyeySGOWwrP7vjqaRgFkBExYsbiNFTnVrPN2P5lDVmVmAq0hEjHzy/TFRBweqNuBTXnAbNxgn4diXvmBEkGYRVe7aOHEsB9ig8NlwRD81z3raP+PzzlApIV1ZTKnvuTGiSH8pSo9hGu+4U+cWdDp7o2IEl7uRw1cxaTeI+U/WN+tmVE/IryhyqxltHUWeUeD820wjhls7FDrH30Ky3+/13zV6dMEzDYNBmFvS0YI4x7uLPNEnGxySYkpkUEPJqOQ2hpeoli1iU=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
