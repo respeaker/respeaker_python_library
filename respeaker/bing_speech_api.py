@@ -77,7 +77,7 @@ class BingSpeechAPI:
             headers = {"Ocp-Apim-Subscription-Key": self.key}
 
             start_time = monotonic()
-            response = self.session.post(credential_url, data=data)
+            response = self.session.post(credential_url, headers=headers)
 
             if response.status_code != 200:
                 raise RequestError("http request error with status code {}".format(response.status_code))
