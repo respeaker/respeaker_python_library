@@ -73,22 +73,17 @@ class BingSpeechAPI:
     def authenticate(self):
         if self.expire_time is None or monotonic() > self.expire_time:  # first credential request, or the access token from the previous one expired
             # get an access token using OAuth
-            credential_url = "https://oxford-speech.cloudapp.net/token/issueToken"
-            data = {
-                "grant_type": "client_credentials",
-                "client_id": "python",
-                "client_secret": self.key,
-                "scope": "https://speech.platform.bing.com"
-            }
+            credential_url = "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
+            headers = {"Ocp-Apim-Subscription-Key": self.key}
+
             start_time = monotonic()
             response = self.session.post(credential_url, data=data)
 
             if response.status_code != 200:
                 raise RequestError("http request error with status code {}".format(response.status_code))
 
-            credentials = response.json()
-
-            self.access_token, expiry_seconds = credentials["access_token"], float(credentials["expires_in"])
+            self.access_token = response.content
+            expiry_seconds = 590 # document mentions the access token is expired in 10 minutes
 
             self.expire_time = start_time + expiry_seconds
 
