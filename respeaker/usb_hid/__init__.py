@@ -17,9 +17,9 @@
 
 import os
 import logging
-from hidapi_backend import HidApiUSB
-from pyusb_backend import PyUSB
-from pywinusb_backend import PyWinUSB
+from respeaker.usb_hid.hidapi_backend import HidApiUSB
+from respeaker.usb_hid.pyusb_backend import PyUSB
+from respeaker.usb_hid.pywinusb_backend import PyWinUSB
 
 INTERFACE = {
              'hidapiusb': HidApiUSB,

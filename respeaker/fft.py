@@ -83,4 +83,4 @@ if __name__ == '__main__':
         data[t] = 10 + int(100 * math.sin(w * t)) + int(200 * math.sin(2 * w * t))
 
     fft = FFT(N)
-    print fft.dft(data)
+    print(fft.dft(data))

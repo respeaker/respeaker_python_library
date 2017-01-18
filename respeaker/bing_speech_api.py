@@ -24,7 +24,11 @@ import uuid
 import wave
 
 import requests
-from monotonic import monotonic
+
+try: # Python 2 and Python <= 3.2
+    from monotonic import monotonic
+except: # Python >= 3.3
+    from time import monotonic
 
 
 class RequestError(Exception):

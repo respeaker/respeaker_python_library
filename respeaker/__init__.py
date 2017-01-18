@@ -15,7 +15,7 @@
  limitations under the License.
 """
 
-from microphone import Microphone
-from spi import SPI, spi
-from player import Player
-from pixel_ring import PixelRing, pixel_ring
+from respeaker.microphone import Microphone
+from respeaker.spi import SPI, spi
+from respeaker.player import Player
+from respeaker.pixel_ring import PixelRing, pixel_ring
