@@ -32,11 +32,11 @@ class WebRTCVAD:
         self.sample_rate = sample_rate
 
         self.frame_ms = 30
-        self.frame_bytes = 2 * self.frame_ms * self.sample_rate / 1000   # S16_LE, 2 bytes width
+        self.frame_bytes = int(2 * self.frame_ms * self.sample_rate / 1000)   # S16_LE, 2 bytes width
 
         self.vad = webrtcvad.Vad(level)
         self.active = False
-        self.data = ''
+        self.data = b''
         self.history = collections.deque(maxlen=128)
 
     def is_speech(self, data):
@@ -81,7 +81,7 @@ class WebRTCVAD:
         return self.active
 
     def reset(self):
-        self.data = ''
+        self.data = b''
         self.active = False
         self.history.clear()
 

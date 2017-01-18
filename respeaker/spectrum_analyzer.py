@@ -17,7 +17,7 @@
 
 import array
 import math
-from fft import FFT
+from respeaker.fft import FFT
 
 
 class SpectrumAnalyzer:
@@ -72,5 +72,5 @@ if __name__ == '__main__':
 
     analyzer = SpectrumAnalyzer(N, rate)
     strength = analyzer.analyze(data.tostring())
-    print [int(f) for f in analyzer.frequencies]
-    print [int(s) for s in strength]
+    print([int(f) for f in analyzer.frequencies])
+    print([int(s) for s in strength])

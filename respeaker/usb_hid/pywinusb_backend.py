@@ -15,7 +15,7 @@
  limitations under the License.
 """
 
-from interface import Interface
+from respeaker.usb_hid.interface import Interface
 import logging, os, collections
 from time import time
 

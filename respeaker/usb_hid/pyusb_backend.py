@@ -15,7 +15,7 @@
  limitations under the License.
 """
 
-from interface import Interface
+from respeaker.usb_hid.interface import Interface
 import logging, os, threading
 
 try:
@@ -111,7 +111,7 @@ class PyUSB(Interface):
                 if board.is_kernel_driver_active(interface_number):
                     board.detach_kernel_driver(interface_number)
             except Exception as e:
-                print e
+                print(e)
 
             ep_in, ep_out = None, None
             for ep in interface:

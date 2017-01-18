@@ -19,17 +19,21 @@
 import os
 import wave
 import types
-import Queue
 import collections
 import random
 import string
 import logging
 from threading import Thread, Event
 
+try: # Python 2
+    import Queue
+except: # Python 3
+    import queue as Queue
+
 import pyaudio
 
-from pixel_ring import pixel_ring
-from vad import vad
+from respeaker.pixel_ring import pixel_ring
+from respeaker.vad import vad
 
 
 logger = logger = logging.getLogger('mic')
@@ -65,7 +69,7 @@ class Microphone:
 
     def __init__(self, pyaudio_instance=None, quit_event=None):
         pixel_ring.set_color(rgb=0x400000)
-    
+
         self.pyaudio_instance = pyaudio_instance if pyaudio_instance else pyaudio.PyAudio()
 
         self.device_index = None
@@ -73,7 +77,7 @@ class Microphone:
             dev = self.pyaudio_instance.get_device_info_by_index(i)
             name = dev['name'].encode('utf-8')
             # print(i, name, dev['maxInputChannels'], dev['maxOutputChannels'])
-            if name.lower().find('respeaker') >= 0 and dev['maxInputChannels'] > 0:
+            if name.lower().find(b'respeaker') >= 0 and dev['maxInputChannels'] > 0:
                 logger.info('Use {}'.format(name))
                 self.device_index = i
                 break

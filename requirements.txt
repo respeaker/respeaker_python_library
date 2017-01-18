@@ -1,3 +1,4 @@
 pocketsphinx
+pyaudio
 webrtcvad
 requests

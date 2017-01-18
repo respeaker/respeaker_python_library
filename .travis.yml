@@ -8,11 +8,13 @@ addons:
       - swig
       - libpulse-dev
       - libfftw3-dev
+      - portaudio19-dev
 python:
   - '2.7'
   - '3.2'
   - '3.3'
   - '3.4'
+  - '3.5'
 script:
   - python -m unittest
 deploy:

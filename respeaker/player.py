@@ -15,7 +15,6 @@
  limitations under the License.
 """
 
-import Queue
 import audioop
 import threading
 import platform
@@ -24,11 +23,16 @@ import tempfile
 import types
 import wave
 
+try: # Python 2
+    import Queue
+except: # Python 3
+    import queue as Queue
+
 import pyaudio
 
-from pixel_ring import pixel_ring
-from spectrum_analyzer import SpectrumAnalyzer
-from spi import spi
+from respeaker.pixel_ring import pixel_ring
+from respeaker.spectrum_analyzer import SpectrumAnalyzer
+from respeaker.spi import spi
 
 CHUNK_SIZE = 1024
 BAND_NUMBER = 16
