@@ -75,7 +75,7 @@ class WebRTCVAD:
                     self.active = False
                 elif sum(self.history) > self.history.maxlen * 0.9:
                     sys.stdout.write('Todo: decrease capture volume')
-                    for _ in range(self.history.maxlen / 2):
+                    for _ in range(int(self.history.maxlen / 2)):
                         self.history.popleft()
 
         return self.active
