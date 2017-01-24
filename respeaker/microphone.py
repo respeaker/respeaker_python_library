@@ -67,7 +67,7 @@ class Microphone:
     detecting_mask = (1 << 1)
     recording_mask = (1 << 2)
 
-    def __init__(self, pyaudio_instance=None, quit_event=None):
+    def __init__(self, pyaudio_instance=None, quit_event=None, decoder=None):
         pixel_ring.set_color(rgb=0x400000)
 
         self.pyaudio_instance = pyaudio_instance if pyaudio_instance else pyaudio.PyAudio()
@@ -98,7 +98,7 @@ class Microphone:
         self.listen_queue = Queue.Queue()
         self.detect_queue = Queue.Queue()
 
-        self.decoder = self.create_decoder()
+        self.decoder = decoder if decoder else self.create_decoder()
         self.decoder.start_utt()
 
         self.status = 0
