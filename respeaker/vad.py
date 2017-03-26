@@ -66,7 +66,7 @@ class WebRTCVAD:
                     break
                 elif len(self.history) == self.history.maxlen and sum(self.history) == 0:
                     sys.stdout.write('Todo: increase capture volume')
-                    for _ in range(self.history.maxlen / 2):
+                    for _ in range(self.history.maxlen // 2):
                         self.history.popleft()
 
             else:
