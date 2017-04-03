@@ -20,7 +20,6 @@ import logging
 import time
 import types
 import os
-import wave
 
 import speech_recognition as sr
 
