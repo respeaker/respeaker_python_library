@@ -1,3 +1,4 @@
+hidapi
 pocketsphinx
 pyaudio
 webrtcvad
