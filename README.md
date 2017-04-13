@@ -29,6 +29,10 @@ It uses [PocketSphinx](https://github.com/cmusphinx/pocketsphinx) for keyword sp
 2. `pip install pyaudio respeaker --upgrade`
 
 
+3. Install hidapi (optional)
+
+  This step is required on OSX.
+
 
 ### Getting started
 
