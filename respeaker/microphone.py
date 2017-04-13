@@ -82,6 +82,9 @@ class Microphone:
                 self.device_index = i
                 break
 
+        if not self.device_index:
+            device = self.pyaudio_instance.get_default_input_device_info()
+            self.device_index = device['index']
         self.stream = self.pyaudio_instance.open(
             input=True,
             start=False,
