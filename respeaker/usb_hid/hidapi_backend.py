@@ -102,7 +102,7 @@ class HidApiUSB(Interface):
         for _ in range(64 - len(data)):
             data.append(0)
         #logging.debug("send: %s", data)
-        self.device.write([0] + data)
+        self.device.write(bytearray([0]) + data)
         return
 
 
