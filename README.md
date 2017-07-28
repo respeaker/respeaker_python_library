@@ -9,7 +9,11 @@ ReSpeaker python library is an open source python library to provide basic funct
 It uses [PocketSphinx](https://github.com/cmusphinx/pocketsphinx) for keyword spotting and uses [webrtcvad](https://github.com/wiseman/py-webrtcvad) for voice activity detecting.
 
 
-### Installation
+### Installation (Not for ReSpeaker Core)
+
+>Note: This library is already installed on ReSpeaker Core by default. Please skip the installation step and don't re-install it
+
+
 `python` and `pip` are required.
 
 1. Install pocketsphinx, webrtcvad
