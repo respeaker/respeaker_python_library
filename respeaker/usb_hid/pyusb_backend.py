@@ -35,8 +35,6 @@ class PyUSB(Interface):
         - write/read an endpoint
     """
 
-    vid = 0
-    pid = 0
     intf_number = 0
 
     isAvailable = isAvailable
@@ -70,75 +68,53 @@ class PyUSB(Interface):
         returns an array of PyUSB (Interface) objects
         """
         # find all devices matching the vid/pid specified
-        all_devices = usb.core.find(find_all=True)
+        dev = usb.core.find(idVendor=0x2886, idProduct=0x0007)
 
-        if not all_devices:
+        if not dev:
             logging.debug("No device connected")
             return []
 
-        boards = []
+        interface_number = -1
 
-        # iterate on all devices found
-        for board in all_devices:
-            interface_number = -1
-            try:
-                # The product string is read over USB when accessed.
-                # This can cause an exception to be thrown if the device
-                # is malfunctioning.
-                product = board.product
-            except usb.core.USBError as error:
-                logging.warning("Exception getting product string: %s", error)
-                continue
-            if (product is None) or (product.find("MicArray") < 0):
-                # Not a ReSpeaker MicArray device so close it
-                usb.util.dispose_resources(board)
-                continue
+        # get active config
+        config = dev.get_active_configuration()
 
-            # get active config
-            config = board.get_active_configuration()
+        # iterate on all interfaces:
+        #    - if we found a HID interface
+        for interface in config:
+            if interface.bInterfaceClass == 0x03:
+                interface_number = interface.bInterfaceNumber
+                break
 
-            # iterate on all interfaces:
-            #    - if we found a HID interface
-            for interface in config:
-                if interface.bInterfaceClass == 0x03:
-                    interface_number = interface.bInterfaceNumber
-                    break
+        if interface_number == -1:
+            return []
 
-            if interface_number == -1:
-                continue
+        try:
+            if dev.is_kernel_driver_active(interface_number):
+                dev.detach_kernel_driver(interface_number)
+        except Exception as e:
+            print(e)
 
-            try:
-                if board.is_kernel_driver_active(interface_number):
-                    board.detach_kernel_driver(interface_number)
-            except Exception as e:
-                print(e)
+        ep_in, ep_out = None, None
+        for ep in interface:
+            if ep.bEndpointAddress & 0x80:
+                ep_in = ep
+            else:
+                ep_out = ep
 
-            ep_in, ep_out = None, None
-            for ep in interface:
-                if ep.bEndpointAddress & 0x80:
-                    ep_in = ep
-                else:
-                    ep_out = ep
+        """If there is no EP for OUT then we can use CTRL EP"""
+        if not ep_in:
+            logging.error('Endpoints not found')
+            return []
 
-            """If there is no EP for OUT then we can use CTRL EP"""
-            if not ep_in:
-                logging.error('Endpoints not found')
-                return None
+        board = PyUSB()
+        board.ep_in = ep_in
+        board.ep_out = ep_out
+        board.dev = dev
+        board.intf_number = interface_number
+        board.start_rx()
 
-            new_board = PyUSB()
-            new_board.ep_in = ep_in
-            new_board.ep_out = ep_out
-            new_board.dev = board
-            new_board.vid = board.idVendor
-            new_board.pid = board.idProduct
-            new_board.intf_number = interface_number
-            new_board.product_name = product
-            new_board.vendor_name = board.manufacturer
-            new_board.serial_number = board.serial_number
-            new_board.start_rx()
-            boards.append(new_board)
-
-        return boards
+        return [board]
 
     def write(self, data):
         """
@@ -155,8 +131,8 @@ class PyUSB(Interface):
         self.read_sem.release()
 
         if not self.ep_out:
-            bmRequestType = 0x21              #Host to device request of type Class of Recipient Interface
-            bmRequest = 0x09              #Set_REPORT (HID class-specific request for transferring data over EP0)
+            bmRequestType = 0x21       #Host to device request of type Class of Recipient Interface
+            bmRequest = 0x09           #Set_REPORT (HID class-specific request for transferring data over EP0)
             wValue = 0x200             #Issuing an OUT report
             wIndex = self.intf_number  #mBed Board interface number for HID
             self.dev.ctrl_transfer(bmRequestType, bmRequest, wValue, wIndex, data)
