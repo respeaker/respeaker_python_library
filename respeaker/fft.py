@@ -24,7 +24,7 @@ import logging
 
 class FFT:
     def __init__(self, size):
-        self.size = 1 << math.frexp(size - 1)[1]
+        self.size = 1 << (size - 1).bit_length()
 
         self.real_input = array.array('f', [0.0] * self.size)
         self.complex_output = array.array('f', [0.0] * (self.size * 2))
