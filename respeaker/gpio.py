@@ -118,7 +118,7 @@ class Gpio(object):
                 self.thread = Thread(target=self._run)
                 self.thread.daemon = True
                 self._running = True
-                self.start()
+                self.thread.start()
 
         if active_low:
             if active_low not in ACTIVE_LOW_MODES:
