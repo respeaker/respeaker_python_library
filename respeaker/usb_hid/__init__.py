@@ -56,8 +56,6 @@ if not usb_backend:
 
 
 devices = None
-if INTERFACE[usb_backend].isAvailable:
-    devices = INTERFACE[usb_backend].getAllConnectedInterface()
 
 
 def get(index=0):
