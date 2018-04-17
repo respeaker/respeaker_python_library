@@ -45,7 +45,6 @@ import logging
 import time
 from threading import Thread, Event
 
-import fix_import
 from respeaker import Microphone
 
 
@@ -66,6 +65,7 @@ def main():
 
     quit_event = Event()
     thread = Thread(target=task, args=(quit_event,))
+    thread.daemon = True
     thread.start()
     while True:
         try:
@@ -74,7 +74,7 @@ def main():
             print('Quit')
             quit_event.set()
             break
-    thread.join()
+    time.sleep(1)
 
 if __name__ == '__main__':
     main()
