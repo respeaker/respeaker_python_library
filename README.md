@@ -35,7 +35,28 @@ It uses [PocketSphinx](https://github.com/cmusphinx/pocketsphinx) for keyword sp
 
 3. Install hidapi (optional)
 
-  This step is required on OSX.
+    
+MacOSX install ReSpeaker Python Library
+
+0.(brew install python2)
+
+1.pip2 install pocketsphinx webrtcvad
+
+2.(Since pyAudio has portAudio as a dependency, you first have to install portaudio: **brew install portaudio**) pip install pyaudio respeaker --upgrade
+3.Install hidapi (optional)
+
+
+### stdio.h file not found error on macOS Mojave
+For anyone discovering this later on who may not be familiar with the command line, here's how to install the macOS_SDK_headers_for_macOS_10.14.pkg package as explained in @yicongli's response above:
+
+In Terminal.app or any shell app like iTerm:
+
+cd /Library/Developer/CommandLineTools/Packages/
+open macOS_SDK_headers_for_macOS_10.14.pkg
+
+Make sure you go through the whole thing and try to install the gem that failed to install again or run bundle install again if this was something you encountered while trying to install from a Gemfile.
+
+
 
 
 ### Getting started
