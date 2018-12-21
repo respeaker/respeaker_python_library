@@ -294,6 +294,13 @@ class Microphone:
 
             self.active = active
 
+        if self.status & self.recording_mask:
+            self.wav.writeframes(in_data)
+            self.record_countdown -= 1
+            if self.record_countdown <= 0:
+                self.status &= ~self.recording_mask
+                self.wav.close()
+
         return None, pyaudio.paContinue
 
 
@@ -328,6 +335,16 @@ def main():
             q.set()
             break
     t.join()
+
+
+def test_record():
+    import time
+
+    mic = Microphone()
+    mic.record('hello.wav', seconds=3)
+    time.sleep(3)
+    mic.quit()
+
 
 if __name__ == '__main__':
     main()
