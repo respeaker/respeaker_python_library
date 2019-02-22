@@ -96,7 +96,7 @@ class Gpio(object):
         self._callback = callback
         self._active_low = active_low
 
-        if not os.path.isdir(self._sysfs_gpio_value_path()):
+        if not os.path.isfile(self._sysfs_gpio_value_path()):
             with open(SYSFS_EXPORT_PATH, 'w') as export:
                 export.write('%d' % number)
         else:
