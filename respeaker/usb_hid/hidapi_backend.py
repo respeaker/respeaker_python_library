@@ -53,7 +53,7 @@ class HidApiUSB(Interface):
         returns an array of HidApiUSB (Interface) objects
         """
 
-        devices = hid.enumerate()
+        devices = hid.enumerate(0,0)
 
         if not devices:
             logging.debug("No Mbed device connected")
